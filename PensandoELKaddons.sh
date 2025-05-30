@@ -8,10 +8,10 @@
 
 ###	
 
-elkgitlocation="https://github.com/tdmakepeace/Pensando_ELK_addons.git"
+elkaddonlocation="https://github.com/tdmakepeace/Pensando_ELK_addons.git"
 elkbasefolder="pensando-elk"
 rootfolder="pensandotools"
-elkaddonfolder="Pensando_ELK_addons"
+elkaddonfolder="Pensando_ELK_addon"
 
 ###  main code area should not be modified.
 	
@@ -69,10 +69,11 @@ create_rootfolder()
 	mkdir -p /$rootfolder/
 	mkdir -p /$rootfolder/scripts
 }
+
 create_addonfolder()
 {
 	cd $rootfolder
-	git clone $elkgitlocation
+	git clone $elkaddonlocation
 }
 
 check_rootfolder_permissions()
@@ -340,7 +341,7 @@ Workflows provided by this script will:
 - Enable DNS
 -  \n" | fold -w 120 -s
 	
-read -p " [U]pdate OS, Enable [D]ns lookup,  , or e[X]it: " x
+read -p " [U]pdate OS, Enable [S]ecurity, Enable [D]ns lookup,  , or e[X]it: " x
 
   x=${x,,}
   
