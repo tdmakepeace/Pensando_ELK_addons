@@ -11,7 +11,7 @@
 elkaddonlocation="https://github.com/tdmakepeace/Pensando_ELK_addons.git"
 elkbasefolder="pensando-elk"
 rootfolder="pensandotools"
-elkaddonfolder="Pensando_ELK_addon"
+elkaddonfolder="Pensando_ELK_addons"
 
 ###  main code area should not be modified.
 	
@@ -72,6 +72,7 @@ create_rootfolder()
 
 create_addonfolder()
 {
+	cd /
 	cd $rootfolder
 	git clone $elkaddonlocation
 }
@@ -252,6 +253,65 @@ refreshAddOn()
 	
 }
 
+
+enableapp()
+{
+	cd /$rootfolder/$elkbasefolder/
+	cp docker-compose.yml docker-compose.yml.preapp
+	
+	TARGET_FILE="docker-compose.yml.preapp"
+	POST_FILE="docker-compose.yml"
+	MARKER1="  logstash:"
+	MARKER2="      - \${PWD}/logstash/psm_event.conf:/usr/share/logstash/pipeline/psm_event.conf"
+	TEMP_FILE=$(mktemp)
+	# Read through the target file and insert source content after the marker
+	while IFS= read -r line; 
+		do
+			echo "$line" >> "$TEMP_FILE"
+			if [[ "$line" == *"$MARKER1"* ]]; then
+				echo "    environment:
+    - DICT_FILE=/usr/share/logstash/config/prot_port_to_app_mapping.yml" >> "$TEMP_FILE"
+			fi 
+			if [[ "$line" == *"$MARKER2"* ]]; then
+				echo "test"
+				sleep 5
+				echo "      - \${PWD}/logstash/prot_port_to_app_mapping.yml:/usr/share/logstash/config/prot_port_to_app_mapping.yml" >> "$TEMP_FILE"
+
+
+			fi
+	done < "$TARGET_FILE"
+	#
+	# Replace the original target file with the updated one
+	mv "$TEMP_FILE" "$POST_FILE"     
+	
+	cd logstash
+	cp /$rootfolder/$elkaddonfolder/APPID_addon/prot_port_to_app_mapping.yml prot_port_to_app_mapping.yml
+	cp dss_syslog.conf dss_syslog.conf.preapp
+
+	cp /$rootfolder/$elkaddonfolder/APPID_addon/APPID_addon.conf ./
+	
+	SOURCE_FILE="APPID_addon.conf"
+	TARGET_FILE="dss_syslog.conf.preapp"
+	POST_FILE="dss_syslog.conf"
+	MARKER="## Begining of add-in options ##"
+	TEMP_FILE=$(mktemp)
+	# Read through the target file and insert source content after the marker
+	while IFS= read -r line; 
+		do
+			echo "$line" >> "$TEMP_FILE"
+			if [[ "$line" == *"$MARKER"* ]]; then
+				cat "$SOURCE_FILE" >> "$TEMP_FILE"
+			fi
+	done < "$TARGET_FILE"
+	#
+	# Replace the original target file with the updated one
+	mv "$TEMP_FILE" "$POST_FILE"             
+		
+}
+
+
+
+
 enabledns()
 {
 	cd /$rootfolder/$elkbasefolder/
@@ -319,11 +379,32 @@ restartlogstash()
 
 testcode()
 {
-		echo " 
-		Space for testing
-					"
-		#elksecurefile			
-		secureelk 
+	cd /$rootfolder/$elkbasefolder/
+	cp docker-compose.yml docker-compose.yml.preapp
+	TARGET_FILE="docker-compose.yml.preapp"
+	POST_FILE="docker-compose.yml"
+	MARKER1="  logstash:"
+	MARKER2="      - \${PWD}/logstash/psm_event.conf:/usr/share/logstash/pipeline/psm_event.conf"
+	TEMP_FILE=$(mktemp)
+	# Read through the target file and insert source content after the marker
+	while IFS= read -r line; 
+		do
+			echo "$line" >> "$TEMP_FILE"
+			if [[ "$line" == *"$MARKER1"* ]]; then
+				echo "    environment:
+    - DICT_FILE=/usr/share/logstash/config/prot_port_to_app_mapping.yml" >> "$TEMP_FILE"
+			fi 
+			if [[ "$line" == *"$MARKER2"* ]]; then
+				echo "test"
+				sleep 5
+				echo "      - \${PWD}/logstash/prot_port_to_app_mapping.yml:/usr/share/logstash/config/prot_port_to_app_mapping.yml" >> "$TEMP_FILE"
+
+
+			fi
+	done < "$TARGET_FILE"
+	#
+	# Replace the original target file with the updated one
+	mv "$TEMP_FILE" "$POST_FILE"     
 		
 }
 
@@ -339,9 +420,10 @@ Workflows provided by this script will:
 - Update OS patches
 - Enable Security login to ELK (HTTP only)
 - Enable DNS
+- Enable APPID
 -  \n" | fold -w 120 -s
 	
-read -p " [U]pdate OS, Enable [S]ecurity, Enable [D]ns lookup,  , or e[X]it: " x
+read -p " [U]pdate OS, Enable [S]ecurity, Enable [D]ns lookup, Enable [A]PPID mapping , or e[X]it: " x
 
   x=${x,,}
   
@@ -360,6 +442,31 @@ read -p " [U]pdate OS, Enable [S]ecurity, Enable [D]ns lookup,  , or e[X]it: " x
 		do
 	    	enabledns
 	    	setdns
+	    	read -p "Enter 'C' to restart logstash: " y
+		
+				y=${y,,}
+				clear
+				while [ $y ==  "c" ] ;
+				do
+	    			restartlogstash
+				  	y="done"
+			  done
+	    	x="done"
+
+	  done
+	  
+	 elif  [ $x == "a" ]; then
+		echo -e "\nPress Ctrl+C to exit at any time.\n"
+		echo -e "This workflow should only be run once; do not run it again unless you have previously cancelled it before completion.\n" | fold -w 80 -s
+		refreshAddOn
+		read -p "Enter 'C' to continue: " x
+		
+		x=${x,,}
+		clear
+
+		while [ $x ==  "c" ] ;
+		do
+	    	enableapp
 	    	read -p "Enter 'C' to restart logstash: " y
 		
 				y=${y,,}
