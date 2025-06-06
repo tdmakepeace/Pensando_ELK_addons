@@ -145,7 +145,6 @@ elksecurefile()
 		sed -i '/- node.name=es01/d' docker-compose.yml
 		sed -i.bak "s/- xpack.security.enabled=false/- discovery.type=single-node\n      - xpack.security.enabled=true\n      - ELASTIC_PASSWORD=changeme/" docker-compose.yml
 		sed -i.bak "s/pensando-kibana/pensando-kibana\n    environment:\n      - ELASTICSEARCH_HOSTS=http:\/\/elasticsearch:9200\n      - ELASTICSEARCH_USERNAME=kibana_system\n      - ELASTICSEARCH_PASSWORD=kibana_system_pass\n      - xpack.security.enabled=true/" docker-compose.yml
-		sed -i.bak  "s/pensando-logstash/pensando-logstash\n    environment:\n      - DICT_FILE= \{DICT_FILE\}/" docker-compose.yml
 	else
 	echo -e "\e[0;31mdocker compose with xpack already set up\e[0m\n check the config files"
 	fi
@@ -258,30 +257,10 @@ enableapp()
 {
 	cd /$rootfolder/$elkbasefolder/
 	cp docker-compose.yml docker-compose.yml.preapp
-	
-	TARGET_FILE="docker-compose.yml.preapp"
-	POST_FILE="docker-compose.yml"
-	MARKER1="    environment:"
-	MARKER2="      - \${PWD}/logstash/psm_event.conf:/usr/share/logstash/pipeline/psm_event.conf"
-	TEMP_FILE=$(mktemp)
-	# Read through the target file and insert source content after the marker
-	while IFS= read -r line; 
-		do
-      echo "$line" >> "$TEMP_FILE"
-      if [[ "$line" == *"$MARKER1"* ]]; then
-        ((env_count++))
-        if [[ $env_count -eq 2 ]]; then
-                echo "      - DICT_FILE=/usr/share/logstash/config/prot_port_to_app_mapping.yml" >> "$TEMP_FILE"
-        fi
-      fi 
-      if [[ "$line" == *"$MARKER2"* ]]; then
-        echo "      - \${PWD}/logstash/prot_port_to_app_mapping.yml:/usr/share/logstash/config/prot_port_to_app_mapping.yml" >> "$TEMP_FILE"
-      fi
-	done < "$TARGET_FILE"
-	#
-	# Replace the original target file with the updated one
-	mv "$TEMP_FILE" "$POST_FILE"     
-	
+
+  sed -z -i.bak "s/\(pensando-logstash\n[[:space:]]*environment:\)/\1\n      - DICT_FILE=\/usr\/share\/logstash\/config\/prot_port_to_app_mapping.yml/" docker-compose.yml
+  sed -z -i.bak "s|\${PWD}/logstash/psm_event.conf:/usr/share/logstash/pipeline/psm_event.conf|&\n      - \${PWD}/logstash/prot_port_to_app_mapping.yml:/usr/share/logstash/config/prot_port_to_app_mapping.yml|" docker-compose.yml
+
 	cd logstash
 	cp /$rootfolder/$elkaddonfolder/APPID_addon/prot_port_to_app_mapping.yml prot_port_to_app_mapping.yml
 	cp dss_syslog.conf dss_syslog.conf.preapp
