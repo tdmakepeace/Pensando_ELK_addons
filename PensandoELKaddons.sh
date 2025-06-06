@@ -261,24 +261,22 @@ enableapp()
 	
 	TARGET_FILE="docker-compose.yml.preapp"
 	POST_FILE="docker-compose.yml"
-	MARKER1="  logstash:"
+	MARKER1="    environment:"
 	MARKER2="      - \${PWD}/logstash/psm_event.conf:/usr/share/logstash/pipeline/psm_event.conf"
 	TEMP_FILE=$(mktemp)
 	# Read through the target file and insert source content after the marker
 	while IFS= read -r line; 
 		do
-			echo "$line" >> "$TEMP_FILE"
-			if [[ "$line" == *"$MARKER1"* ]]; then
-				echo "    environment:
-    - DICT_FILE=/usr/share/logstash/config/prot_port_to_app_mapping.yml" >> "$TEMP_FILE"
-			fi 
-			if [[ "$line" == *"$MARKER2"* ]]; then
-				echo "test"
-				sleep 5
-				echo "      - \${PWD}/logstash/prot_port_to_app_mapping.yml:/usr/share/logstash/config/prot_port_to_app_mapping.yml" >> "$TEMP_FILE"
-
-
-			fi
+      echo "$line" >> "$TEMP_FILE"
+      if [[ "$line" == *"$MARKER1"* ]]; then
+        ((env_count++))
+        if [[ $env_count -eq 2 ]]; then
+                echo "      - DICT_FILE=/usr/share/logstash/config/prot_port_to_app_mapping.yml" >> "$TEMP_FILE"
+        fi
+      fi 
+      if [[ "$line" == *"$MARKER2"* ]]; then
+        echo "      - \${PWD}/logstash/prot_port_to_app_mapping.yml:/usr/share/logstash/config/prot_port_to_app_mapping.yml" >> "$TEMP_FILE"
+      fi
 	done < "$TARGET_FILE"
 	#
 	# Replace the original target file with the updated one
