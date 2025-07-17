@@ -297,7 +297,7 @@ psmbuddy()
 	chmod -R 777 psmbuddy
 	
 	cp docker-compose.yml docker-compose.yml.prepsmbuddy
-	p /$rootfolder/$elkaddonfolder/psmbuddy/psmbuddy.yml ./
+	cp /$rootfolder/$elkaddonfolder/psmbuddy/psmbuddy.yml ./
 	SOURCE_FILE="psmbuddy.yml"
 	TARGET_FILE="docker-compose.yml.prepsmbuddy"
 	POST_FILE="docker-compose.yml"
@@ -428,7 +428,7 @@ Workflows provided by this script will:
 - Enable DNS
 - Enable APPID
 - Enable PSM Buddy
--  \n" | fold -w 120 -s
+\n" | fold -w 120 -s
 	
 read -p " [U]pdate OS, Enable [S]ecurity, Enable [D]ns lookup, Enable [A]PPID mapping , Enable [P]smBuddy or e[X]it: " x
 
@@ -500,7 +500,7 @@ read -p " [U]pdate OS, Enable [S]ecurity, Enable [D]ns lookup, Enable [A]PPID ma
 		  	x="done"
 	  done
 	  
-	  elif [  "$x" ==  "b" ]; then
+	  elif [  "$x" ==  "p" ]; then
 		echo -e "\nPress Ctrl+C to exit at any time.\n"
 		echo -e "This workflow should only be run once; do not run it again unless you have previously cancelled it before completion.\n" | fold -w 80 -s
 		read -p "Enter 'C' to continue: " x
