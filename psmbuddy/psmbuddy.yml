@@ -25,3 +25,4 @@
       start_period: 40s
     restart: unless-stopped
     networks: ['elk-stack']
+
