@@ -293,7 +293,7 @@ psmbuddy()
 	mkdir -p psmbuddy
 	mkdir -p psmbuddy/app-instance
 	mkdir -p psmbuddy/snapshot
-	mkdir -p psmbuddy/backups
+	mkdir -p psmbuddy/snapshot/logs
 	chmod -R 777 psmbuddy
 	
 	cp docker-compose.yml docker-compose.yml.prepsmbuddy

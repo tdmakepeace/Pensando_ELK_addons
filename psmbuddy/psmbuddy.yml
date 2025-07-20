@@ -10,8 +10,8 @@
       # Persist application configuration files
       - ${PWD}/psmbuddy/app-instance:/app/var/app-instance
       # Persist backup logs
-      - ${PWD}/psmbuddy/snapshot:/var/log/pensando/snapshot
-      - ${PWD}/psmbuddy/backups:/var/log/pensando/backups
+      - ${PWD}/psmbuddy/snapshot/logs:/var/log/pensando/snapshot
+      - ${PWD}/psmbuddy/snapshot:/app/snapshot
       # Shared APPID file with Logstash
       - ${PWD}/logstash/prot_port_to_app_mapping.yml:/app/var/app-instance/prot_port_to_app_mapping.yml
       # TLS Certificate and Key (optional)
