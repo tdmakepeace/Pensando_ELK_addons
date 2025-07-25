@@ -287,7 +287,36 @@ enableapp()
 }
 
 
-
+psmbuddy()
+{
+	cd /$rootfolder/$elkbasefolder/	
+	mkdir -p psmbuddy
+	mkdir -p psmbuddy/app-instance
+	mkdir -p psmbuddy/snapshot
+	mkdir -p psmbuddy/snapshot/logs
+	chmod -R 777 psmbuddy
+	
+	cp docker-compose.yml docker-compose.yml.prepsmbuddy
+	cp /$rootfolder/$elkaddonfolder/psmbuddy/psmbuddy.yml ./
+	SOURCE_FILE="psmbuddy.yml"
+	TARGET_FILE="docker-compose.yml.prepsmbuddy"
+	POST_FILE="docker-compose.yml"
+	MARKER="  # ElastiFlow Unified Collector"
+	TEMP_FILE=$(mktemp)
+	# Read through the target file and insert source content after the marker
+	while IFS= read -r line; 
+		do
+			if [[ "$line" == *"$MARKER"* ]]; then
+				cat "$SOURCE_FILE" >> "$TEMP_FILE"
+			fi
+			echo "$line" >> "$TEMP_FILE"
+	done < "$TARGET_FILE"
+	#
+	# Replace the original target file with the updated one
+	mv "$TEMP_FILE" "$POST_FILE"
+	
+	
+}
 
 enabledns()
 {
@@ -398,9 +427,10 @@ Workflows provided by this script will:
 - Enable Security login to ELK (HTTP only)
 - Enable DNS
 - Enable APPID
--  \n" | fold -w 120 -s
+- Enable PSM Buddy
+\n" | fold -w 120 -s
 	
-read -p " [U]pdate OS, Enable [S]ecurity, Enable [D]ns lookup, Enable [A]PPID mapping , or e[X]it: " x
+read -p " [U]pdate OS, Enable [S]ecurity, Enable [D]ns lookup, Enable [A]PPID mapping , Enable [P]smBuddy or e[X]it: " x
 
   x=${x,,}
   
@@ -467,6 +497,19 @@ read -p " [U]pdate OS, Enable [S]ecurity, Enable [D]ns lookup, Enable [A]PPID ma
 		while [ $x ==  "c" ] ;
 		do
 	    	secureelk
+		  	x="done"
+	  done
+	  
+	  elif [  "$x" ==  "p" ]; then
+		echo -e "\nPress Ctrl+C to exit at any time.\n"
+		echo -e "This workflow should only be run once; do not run it again unless you have previously cancelled it before completion.\n" | fold -w 80 -s
+		read -p "Enter 'C' to continue: " x
+		
+		x=${x,,}
+		clear
+		while [ $x ==  "c" ] ;
+		do
+	    	psmbuddy
 		  	x="done"
 	  done
 	  

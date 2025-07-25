@@ -1,0 +1,30 @@
+  psm-buddy:
+    image: maxpower86/psm-buddy:latest
+    container_name: psm-buddy
+    ports:
+      - "5600:5600"
+    environment:
+      # Enable TLS (Optional)
+      - TLS_ENABLED=False
+    volumes:
+      # Persist application configuration files
+      - ${PWD}/psmbuddy/app-instance:/app/var/app-instance
+      # Persist backup logs
+      - ${PWD}/psmbuddy/snapshot/logs:/var/log/pensando/snapshot
+      - ${PWD}/psmbuddy/snapshot:/app/snapshot
+      # Shared APPID file with Logstash
+      - ${PWD}/logstash/prot_port_to_app_mapping.yml:/app/var/app-instance/prot_port_to_app_mapping.yml
+      # TLS Certificate and Key (optional)
+      # - ${PWD}/psm-buddy-cert.pem:/app/certs/cert.pem
+      # - ${PWD}/psm-buddy-key.pem:/app/certs/key.pem
+    healthcheck:
+      test: ["CMD", "curl", "-f", "-k", "http://localhost:5600/login"]
+      # if you enable TLS Certificate and Key
+      # test: ["CMD", "curl", "-f", "-k", "https://localhost:5600/login"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+    networks: ['elk-stack']
+
