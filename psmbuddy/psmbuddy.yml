@@ -18,7 +18,9 @@
       # - ${PWD}/psm-buddy-cert.pem:/app/certs/cert.pem
       # - ${PWD}/psm-buddy-key.pem:/app/certs/key.pem
     healthcheck:
-      test: ["CMD", "curl", "-f", "-k", "https://localhost:5600/login"]
+      test: ["CMD", "curl", "-f", "-k", "http://localhost:5600/login"]
+      # if you enable TLS Certificate and Key
+      # test: ["CMD", "curl", "-f", "-k", "https://localhost:5600/login"]
       interval: 30s
       timeout: 10s
       retries: 3
