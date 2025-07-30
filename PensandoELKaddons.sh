@@ -257,6 +257,7 @@ enableapp()
 {
 	cd /$rootfolder/$elkbasefolder/
 	cp docker-compose.yml docker-compose.yml.preapp
+	cp /$rootfolder/$elkaddonfolder/DNS_addon/refresh_logstash.sh ./
 
   sed -z -i.bak "s/\(pensando-logstash\n[[:space:]]*environment:\)/\1\n      - DICT_FILE=\/usr\/share\/logstash\/config\/prot_port_to_app_mapping.yml/" docker-compose.yml
   sed -z -i.bak "s|\${PWD}/logstash/psm_event.conf:/usr/share/logstash/pipeline/psm_event.conf|&\n      - \${PWD}/logstash/prot_port_to_app_mapping.yml:/usr/share/logstash/config/prot_port_to_app_mapping.yml|" docker-compose.yml
